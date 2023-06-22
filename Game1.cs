@@ -112,8 +112,6 @@ namespace ProjetMonogame
             _malusTexture = new Texture2D(GraphicsDevice, 1, 1);
             _malusTexture.SetData(new Color[] { Color.Blue });
 
-
-
             _playerRectangle = new Rectangle(ScreenWidth / 2 - 25, ScreenHeight - 75, 50, 50);
 
             _carRectangles = new List<Rectangle>();
@@ -130,12 +128,10 @@ namespace ProjetMonogame
             _gameOver = false;
             _gameWon = false;
 
-            // Définition de la zone de départ (en violet)
             int startZoneHeight = 80;
             int startZoneY = ScreenHeight - startZoneHeight;
             _startZone = new Rectangle(0, startZoneY, ScreenWidth, startZoneHeight);
 
-            // Définition de la zone d'arrivée (en jaune)
             int safeZoneHeight = 80;
             int safeZoneY = 0;
             _safeZone = new Rectangle(0, safeZoneY, ScreenWidth, safeZoneHeight);
@@ -259,7 +255,6 @@ namespace ProjetMonogame
             if (_playerRectangle.Intersects(_bonusRectangle))
             {
                 _score++;
-                // Faire apparaître le bonus à un nouvel endroit aléatoire
                 _bonusRectangle.X = _random.Next(0, ScreenWidth - 40);
                 _bonusRectangle.Y = _random.Next(0, ScreenHeight - 40);
             }
@@ -267,7 +262,6 @@ namespace ProjetMonogame
             if (_playerRectangle.Intersects(_malusRectangle))
             {
                 _score--;
-                // Faire apparaître le malus à un nouvel endroit aléatoire
                 _malusRectangle.X = _random.Next(0, ScreenWidth - 40);
                 _malusRectangle.Y = _random.Next(0, ScreenHeight - 40);
             }
@@ -285,7 +279,6 @@ namespace ProjetMonogame
 
             if (showMenu)
             {
-                // Draw the full background for the main menu
                 _spriteBatch.Draw(_menuImage, new Rectangle(0, 0, ScreenWidth, ScreenHeight), Color.White);
                 DrawMenu();
             }
@@ -293,10 +286,8 @@ namespace ProjetMonogame
             {
                 if (currentPage == MenuPage.StartGame)
                 {
-                    // Draw the road image for the in-between zone.
                     _spriteBatch.Draw(_roadImage, new Rectangle(0, _startZone.Height, ScreenWidth, ScreenHeight - _startZone.Height - _safeZone.Height), Color.White);
 
-                    // Draw the start and safe zones with the newly loaded images.
                     _spriteBatch.Draw(_startZoneImage, _startZone, Color.White);
                     _spriteBatch.Draw(_safeZoneImage, _safeZone, Color.White);
 
@@ -304,7 +295,6 @@ namespace ProjetMonogame
                     _spriteBatch.Draw(_malusTexture, _malusRectangle, Color.White);
 
 
-                    // Now drawing the player and cars with their new images.
                     _spriteBatch.Draw(_playerTexture, _playerRectangle, Color.White);
 
                     foreach (var carRectangle in _carRectangles)
@@ -347,12 +337,10 @@ namespace ProjetMonogame
                 }
                 else if (currentPage == MenuPage.HowToPlay)
                 {
-                    // Draw the full background for the "How to Play" page
                     _spriteBatch.Draw(_howToPlayImage, new Rectangle(0, 0, ScreenWidth, ScreenHeight), Color.White);
                 }
                 else if (currentPage == MenuPage.Leaderboard)
                 {
-                    // Draw the full background for the "Leaderboard" page
                     _spriteBatch.Draw(_leaderboardImage, new Rectangle(0, 0, ScreenWidth, ScreenHeight), Color.White);
                 }
             }
