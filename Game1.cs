@@ -1,11 +1,28 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 
 namespace ProjetMonogame
 {
+    public enum GameStateEnum
+    {
+        InProgress,
+        Won,
+        Lost
+    }
+    public class GameState
+    {
+        public Rectangle PlayerRectangle { get; set; }
+        public List<Rectangle> CarRectangles { get; set; }
+        public Rectangle BonusRectangle { get; set; }
+        public Rectangle MalusRectangle { get; set; }
+        public int Score { get; set; }
+        public GameStateEnum GameStates { get; set; }
+    }
+
     public class Game1 : Game
     {
         private GraphicsDeviceManager _graphics;
@@ -40,6 +57,7 @@ namespace ProjetMonogame
         private Random _random;
 
         private int _score;
+        private GameStateEnum _gameState;
         private bool _gameOver;
         private bool _gameWon;
 
@@ -74,6 +92,7 @@ namespace ProjetMonogame
 
         protected override void Initialize()
         {
+            _gameState = GameStateEnum.InProgress;
             _random = new Random();
             currentPage = MenuPage.StartGame;
             backgroundColor = Color.Black;
@@ -265,8 +284,33 @@ namespace ProjetMonogame
                 _malusRectangle.X = _random.Next(0, ScreenWidth - 40);
                 _malusRectangle.Y = _random.Next(0, ScreenHeight - 40);
             }
+            if (Keyboard.GetState().IsKeyDown(Keys.S))
+            {
+                GameState gameState = new GameState
+                {
+                    PlayerRectangle = _playerRectangle,
+                    CarRectangles = _carRectangles,
+                    BonusRectangle = _bonusRectangle,
+                    MalusRectangle = _malusRectangle,
+                    Score = _score,
+                    GameStates = _gameState
+                };
 
+                string json = JsonConvert.SerializeObject(gameState);
+                System.IO.File.WriteAllText("savedgame.json", json);
+            }
+            if (Keyboard.GetState().IsKeyDown(Keys.L))
+            {
+                string json = System.IO.File.ReadAllText("savedgame.json");
+                GameState loadedGameState = JsonConvert.DeserializeObject<GameState>(json);
 
+                _playerRectangle = loadedGameState.PlayerRectangle;
+                _carRectangles = loadedGameState.CarRectangles;
+                _bonusRectangle = loadedGameState.BonusRectangle;
+                _malusRectangle = loadedGameState.MalusRectangle;
+                _score = loadedGameState.Score;
+                _gameState = loadedGameState.GameStates;
+            }
 
             base.Update(gameTime);
         }
