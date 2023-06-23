@@ -1,18 +1,18 @@
 [
   {
-    "PlayerName": "John",
+    "PlayerName": "Jeremie",
     "Score": 100
   },
   {
-    "PlayerName": "Emma",
+    "PlayerName": "Jean",
     "Score": 95
   },
   {
-    "PlayerName": "Michael",
+    "PlayerName": "Michel",
     "Score": 80
   },
   {
-    "PlayerName": "Sophia",
+    "PlayerName": "Sophie",
     "Score": 75
   },
   {
@@ -22,26 +22,26 @@
 
   {
     "PlayerName": "Mohamed",
-    "Score": 10
+    "Score": 60
   },
   {
     "PlayerName": "Christopher",
-    "Score": 15
+    "Score": 58
   },
   {
     "PlayerName": "Gautier",
-    "Score": 20
+    "Score": 30
   },
   {
     "PlayerName": "Ryan",
-    "Score": 7
+    "Score": 24
   },
   {
     "PlayerName": "Amine",
-    "Score": 5
+    "Score": 20
   },
   {
     "PlayerName": "D4rckWind",
-    "Score": 154
+    "Score": 8
   }
 ]

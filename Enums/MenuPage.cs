@@ -1,4 +1,4 @@
-﻿namespace ProjetMonogame
+﻿namespace ProjetMonogame.Enums
 {
     enum MenuPage
     {

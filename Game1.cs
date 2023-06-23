@@ -6,92 +6,60 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using ProjetMonogame.Enums;
+using ProjetMonogame.Classes;
+using Microsoft.Xna.Framework.Media;
 
 namespace ProjetMonogame
 {
-    public enum GameStateEnum
-    {
-        InProgress,
-        Won,
-        Lost
-    }
-
-    public class GameState
-    {
-        public Rectangle PlayerRectangle { get; set; }
-        public List<Rectangle> CarRectangles { get; set; }
-        public Rectangle BonusRectangle { get; set; }
-        public Rectangle MalusRectangle { get; set; }
-        public int Score { get; set; }
-        public GameStateEnum GameStates { get; set; }
-    }
-
-    public class PlayerScore
-    {
-        public string PlayerName { get; set; }
-        public int Score { get; set; }
-    }
-
     public class Game1 : Game
     {
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
 
-        private Texture2D _startZoneImage;
-        private Texture2D _safeZoneImage;
-        private Texture2D _roadImage;
-
-        private Texture2D _playerTexture;
-        private Texture2D _carTexture;
-        private Rectangle _playerRectangle;
-        private List<Rectangle> _carRectangles;
         private const int CarSpeed = 12;
-
         private const int ScreenWidth = 1080;
         private const int ScreenHeight = 720;
-        private string _leaderboardText;
 
         private Texture2D _howToPlayImage;
         private Texture2D _leaderboardImage;
         private Texture2D _menuImage;
-
-        private Rectangle _bonusRectangle;
-        private Rectangle _malusRectangle;
-        private List<PlayerScore> _leaderboardScores;
-
         private Texture2D _bonusTexture;
         private Texture2D _malusTexture;
-
-        private int _bonusTimer;
-        private int _malusTimer;
-
-        private Random _random;
-
-        private int _score;
-        private GameStateEnum _gameState;
-        private bool _gameOver;
-        private bool _gameWon;
+        private Texture2D _startZoneImage;
+        private Texture2D _safeZoneImage;
+        private Texture2D _roadImage;
+        private Texture2D _playerTexture;
+        private Texture2D _carTexture;
 
         private Rectangle _safeZone;
         private Rectangle _startZone;
+        private Rectangle _bonusRectangle;
+        private Rectangle _malusRectangle;
+        private Rectangle _playerRectangle;
+        private List<Rectangle> _carRectangles;
+        private List<PlayerScore> _leaderboardScores;
+        private Random _random;
+
+        private int _score;
+        private bool _gameOver;
+        private bool _gameWon;
+        private bool showMenu;
+        private bool menuEnabled;
 
         private SpriteFont _font;
-
+        private GameStateEnum _gameState;
         private MenuPage currentPage;
+        private Color backgroundColor;
+        private Color selectedColor = Color.DarkRed;
+        private KeyboardState currentKeyboardState;
+        private KeyboardState previousKeyboardState;
 
-        Color backgroundColor;
-        Color selectedColor = Color.DarkRed;
+        private string startGameText = "Start Game";
+        private string leaderboardText = "Leaderboard";
+        private string howToPlayText = "How to Play";
+        private string exitText = "Exit";
 
-        KeyboardState currentKeyboardState;
-        KeyboardState previousKeyboardState;
-
-        bool showMenu;
-        bool menuEnabled;
-
-        string startGameText = "Start Game";
-        string leaderboardText = "Leaderboard";
-        string howToPlayText = "How to Play";
-        string exitText = "Exit";
         private void SaveScores()
         {
             string scoresFilePath = Path.Combine(Content.RootDirectory, "Data", "scores.json");
@@ -105,7 +73,7 @@ namespace ProjetMonogame
 
             var playerScore = new PlayerScore
             {
-                PlayerName = "Player1",
+                PlayerName = "D4rckWind",
                 Score = _score
             };
 
@@ -133,7 +101,6 @@ namespace ProjetMonogame
             _graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
             IsMouseVisible = true;
-
         }
 
         protected override void Initialize()
@@ -148,7 +115,6 @@ namespace ProjetMonogame
             _bonusRectangle = new Rectangle(_random.Next(0, ScreenWidth - 40), _random.Next(0, ScreenHeight - 40), 40, 40);
             _malusRectangle = new Rectangle(_random.Next(0, ScreenWidth - 40), _random.Next(0, ScreenHeight - 40), 40, 40);
 
-
             _graphics.PreferredBackBufferWidth = ScreenWidth;
             _graphics.PreferredBackBufferHeight = ScreenHeight;
             _graphics.ApplyChanges();
@@ -158,6 +124,11 @@ namespace ProjetMonogame
 
         protected override void LoadContent()
         {
+
+            Song gameMusic = Content.Load<Song>("musique");
+            MediaPlayer.IsRepeating = true;
+            MediaPlayer.Play(gameMusic);
+
             _spriteBatch = new SpriteBatch(GraphicsDevice);
             string scoresFilePath = Path.Combine(Content.RootDirectory, "Data", "scores.json");
             if (File.Exists(scoresFilePath))
@@ -177,8 +148,7 @@ namespace ProjetMonogame
                 _leaderboardScores = new List<PlayerScore>();
             }
 
-
-            _howToPlayImage = Content.Load<Texture2D>("howtoplay");
+            _howToPlayImage = Content.Load<Texture2D>("instructions");
             _leaderboardImage = Content.Load<Texture2D>("leaderboard");
             _menuImage = Content.Load<Texture2D>("bgmainmenu");
 
@@ -337,6 +307,7 @@ namespace ProjetMonogame
                         }
                         else
                         {
+                            SaveScores();
                             RestartGame();
                         }
                     }
@@ -374,11 +345,11 @@ namespace ProjetMonogame
                 };
 
                 string json = JsonConvert.SerializeObject(gameState);
-                System.IO.File.WriteAllText("savedgame.json", json);
+                File.WriteAllText("savedgame.json", json);
             }
             if (Keyboard.GetState().IsKeyDown(Keys.L))
             {
-                string json = System.IO.File.ReadAllText("savedgame.json");
+                string json = File.ReadAllText("savedgame.json");
                 GameState loadedGameState = JsonConvert.DeserializeObject<GameState>(json);
 
                 _playerRectangle = loadedGameState.PlayerRectangle;
@@ -414,7 +385,6 @@ namespace ProjetMonogame
 
                     _spriteBatch.Draw(_bonusTexture, _bonusRectangle, Color.White);
                     _spriteBatch.Draw(_malusTexture, _malusRectangle, Color.White);
-
 
                     _spriteBatch.Draw(_playerTexture, _playerRectangle, Color.White);
 
@@ -459,13 +429,20 @@ namespace ProjetMonogame
                 else if (currentPage == MenuPage.HowToPlay)
                 {
                     _spriteBatch.Draw(_howToPlayImage, new Rectangle(0, 0, ScreenWidth, ScreenHeight), Color.White);
+
+                    string howToPlayText = @"
+                How to Play :
+
+                -Touches directionnelles pour deplacer Froggy.
+                - Les carres rouges sont des malus.
+                - Les carres bleus sont des bonus.";
+
+                    Vector2 textPosition = new Vector2(50, 150);
+                    _spriteBatch.DrawString(_font, howToPlayText, textPosition, Color.White);
                 }
                 else if (currentPage == MenuPage.Leaderboard)
                 {
                     _spriteBatch.Draw(_leaderboardImage, new Rectangle(0, 0, ScreenWidth, ScreenHeight), Color.White);
-
-                    Vector2 titlePosition = new Vector2(ScreenWidth / 2 - 100, 100);
-                    _spriteBatch.DrawString(_font, "Leaderboard", titlePosition, Color.White);
 
                     Vector2 scoresStartPosition = new Vector2(ScreenWidth / 2 - 100, 200);
                     int scoreOffset = 30;
@@ -476,10 +453,9 @@ namespace ProjetMonogame
                     {
                         var score = _leaderboardScores[i];
                         Vector2 scorePosition = scoresStartPosition + new Vector2(0, scoreOffset * i);
-                        _spriteBatch.DrawString(_font, $"{score.PlayerName}: {score.Score}", scorePosition, Color.White);
+                        _spriteBatch.DrawString(_font, $"{score.PlayerName}: {score.Score}", scorePosition, Color.Black);
                     }
                 }
-
             }
 
             _spriteBatch.End();
@@ -505,7 +481,6 @@ namespace ProjetMonogame
 
             _spriteBatch.DrawString(_font,
                 exitText, exitPosition, currentPage == MenuPage.Exit ? selectedColor : Color.White);
-
         }
 
         private void RestartGame()
@@ -527,6 +502,7 @@ namespace ProjetMonogame
             _score = 0;
             _gameOver = false;
             _gameWon = false;
+            _gameState = GameStateEnum.InProgress;
         }
 
         public static void Main(string[] args)
