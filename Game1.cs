@@ -4,6 +4,8 @@ using Microsoft.Xna.Framework.Input;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 
 namespace ProjetMonogame
 {
@@ -13,6 +15,7 @@ namespace ProjetMonogame
         Won,
         Lost
     }
+
     public class GameState
     {
         public Rectangle PlayerRectangle { get; set; }
@@ -21,6 +24,12 @@ namespace ProjetMonogame
         public Rectangle MalusRectangle { get; set; }
         public int Score { get; set; }
         public GameStateEnum GameStates { get; set; }
+    }
+
+    public class PlayerScore
+    {
+        public string PlayerName { get; set; }
+        public int Score { get; set; }
     }
 
     public class Game1 : Game
@@ -40,6 +49,7 @@ namespace ProjetMonogame
 
         private const int ScreenWidth = 1080;
         private const int ScreenHeight = 720;
+        private string _leaderboardText;
 
         private Texture2D _howToPlayImage;
         private Texture2D _leaderboardImage;
@@ -47,6 +57,7 @@ namespace ProjetMonogame
 
         private Rectangle _bonusRectangle;
         private Rectangle _malusRectangle;
+        private List<PlayerScore> _leaderboardScores;
 
         private Texture2D _bonusTexture;
         private Texture2D _malusTexture;
@@ -81,6 +92,41 @@ namespace ProjetMonogame
         string leaderboardText = "Leaderboard";
         string howToPlayText = "How to Play";
         string exitText = "Exit";
+        private void SaveScores()
+        {
+            string scoresFilePath = Path.Combine(Content.RootDirectory, "Data", "scores.json");
+
+            List<PlayerScore> existingScores = new List<PlayerScore>();
+            if (File.Exists(scoresFilePath))
+            {
+                string existingScoresJson = File.ReadAllText(scoresFilePath);
+                existingScores = JsonConvert.DeserializeObject<List<PlayerScore>>(existingScoresJson);
+            }
+
+            var playerScore = new PlayerScore
+            {
+                PlayerName = "Player1",
+                Score = _score
+            };
+
+            var existingPlayerScore = existingScores.FirstOrDefault(score => score.PlayerName == playerScore.PlayerName);
+            if (existingPlayerScore != null)
+            {
+                existingPlayerScore.Score = playerScore.Score;
+            }
+            else
+            {
+                existingScores.Add(playerScore);
+            }
+
+            existingScores = existingScores.OrderByDescending(score => score.Score).ToList();
+
+            existingScores = existingScores.Take(10).ToList();
+
+            string newScoresJson = JsonConvert.SerializeObject(existingScores);
+
+            File.WriteAllText(scoresFilePath, newScoresJson);
+        }
 
         public Game1()
         {
@@ -113,14 +159,32 @@ namespace ProjetMonogame
         protected override void LoadContent()
         {
             _spriteBatch = new SpriteBatch(GraphicsDevice);
+            string scoresFilePath = Path.Combine(Content.RootDirectory, "Data", "scores.json");
+            if (File.Exists(scoresFilePath))
+            {
+                string scoresJson = File.ReadAllText(scoresFilePath);
+                if (!string.IsNullOrEmpty(scoresJson))
+                {
+                    _leaderboardScores = JsonConvert.DeserializeObject<List<PlayerScore>>(scoresJson);
+                }
+                else
+                {
+                    _leaderboardScores = new List<PlayerScore>();
+                }
+            }
+            else
+            {
+                _leaderboardScores = new List<PlayerScore>();
+            }
+
 
             _howToPlayImage = Content.Load<Texture2D>("howtoplay");
             _leaderboardImage = Content.Load<Texture2D>("leaderboard");
             _menuImage = Content.Load<Texture2D>("bgmainmenu");
 
-            _startZoneImage = Content.Load<Texture2D>("arrivalzone"); // faire l'image de départ 
+            _startZoneImage = Content.Load<Texture2D>("startingzone");
             _safeZoneImage = Content.Load<Texture2D>("arrivalzone");
-            _roadImage = Content.Load<Texture2D>("arrivalzone"); //Créer une route 
+            _roadImage = Content.Load<Texture2D>("road");
 
             _playerTexture = Content.Load<Texture2D>("frog");
             _carTexture = Content.Load<Texture2D>("car");
@@ -164,6 +228,11 @@ namespace ProjetMonogame
         {
             if (Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
+
+            if (_gameState == GameStateEnum.Won)
+            {
+                SaveScores();
+            }
 
             if (menuEnabled)
             {
@@ -261,7 +330,15 @@ namespace ProjetMonogame
                 {
                     if (Keyboard.GetState().IsKeyDown(Keys.R))
                     {
-                        RestartGame();
+                        if (_gameState == GameStateEnum.Won)
+                        {
+                            SaveScores();
+                            RestartGame();
+                        }
+                        else
+                        {
+                            RestartGame();
+                        }
                     }
                 }
                 if (Keyboard.GetState().IsKeyDown(Keys.Back) && previousKeyboardState.IsKeyUp(Keys.Back))
@@ -386,7 +463,23 @@ namespace ProjetMonogame
                 else if (currentPage == MenuPage.Leaderboard)
                 {
                     _spriteBatch.Draw(_leaderboardImage, new Rectangle(0, 0, ScreenWidth, ScreenHeight), Color.White);
+
+                    Vector2 titlePosition = new Vector2(ScreenWidth / 2 - 100, 100);
+                    _spriteBatch.DrawString(_font, "Leaderboard", titlePosition, Color.White);
+
+                    Vector2 scoresStartPosition = new Vector2(ScreenWidth / 2 - 100, 200);
+                    int scoreOffset = 30;
+
+                    int maxScoresToShow = Math.Min(_leaderboardScores.Count, 10);
+
+                    for (int i = 0; i < maxScoresToShow; i++)
+                    {
+                        var score = _leaderboardScores[i];
+                        Vector2 scorePosition = scoresStartPosition + new Vector2(0, scoreOffset * i);
+                        _spriteBatch.DrawString(_font, $"{score.PlayerName}: {score.Score}", scorePosition, Color.White);
+                    }
                 }
+
             }
 
             _spriteBatch.End();

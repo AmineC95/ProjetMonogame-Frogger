@@ -5,6 +5,7 @@
         StartGame,
         Leaderboard,
         HowToPlay,
-        Exit
+        Exit,
+        EnterName
     }
 }
