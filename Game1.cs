@@ -465,6 +465,18 @@ namespace ProjetMonogame
 
         private void DrawMenu()
         {
+
+            Rectangle menuRectangle = new Rectangle(80, 80, 300, 200);
+            Color rectangleColor = new Color(0, 0, 0, 128);
+            _spriteBatch.Draw(_menuImage, menuRectangle, rectangleColor);
+            Color borderColor = Color.White;
+            int borderWidth = 2;
+
+            _spriteBatch.Draw(_menuImage, new Rectangle(menuRectangle.Left, menuRectangle.Top, menuRectangle.Width, borderWidth), borderColor);
+            _spriteBatch.Draw(_menuImage, new Rectangle(menuRectangle.Left, menuRectangle.Bottom - borderWidth, menuRectangle.Width, borderWidth), borderColor);
+            _spriteBatch.Draw(_menuImage, new Rectangle(menuRectangle.Left, menuRectangle.Top, borderWidth, menuRectangle.Height), borderColor);
+            _spriteBatch.Draw(_menuImage, new Rectangle(menuRectangle.Right - borderWidth, menuRectangle.Top, borderWidth, menuRectangle.Height), borderColor);
+
             Vector2 startGamePosition = new Vector2(100, 100);
             Vector2 leaderboardPosition = new Vector2(100, 150);
             Vector2 howToPlayPosition = new Vector2(100, 200);
